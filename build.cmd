@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 setlocal enabledelayedexpansion
 
 set PATH=%CD%\depot_tools;%PATH%
@@ -30,9 +30,9 @@ if exist "%ProgramFiles%\7-Zip\7z.exe" (
   set SZIP=7za.exe
 )
 
-for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -version [16.0^,17.0^) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath`) do set VS=%%i
+for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -version [17.0^,18.0^) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath`) do set VS=%%i
 if "!VS!" equ "" (
-  echo ERROR: Visual Studio 2019 installation not found
+  echo ERROR: Visual Studio 2022 installation not found
   exit /b 1
 )  
 
@@ -69,9 +69,12 @@ pushd angle.src
 
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0
 call gclient sync || exit /b 1
-call gn gen out/Release --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=false angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_null=false" || exit /b 1
+rem call gn gen out/Release --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=false angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_null=false" || exit /b 1
+call gn gen out/Release --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=true angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
+rem call gn gen out/Debug --args="angle_build_all=false is_debug=true angle_has_frame_capture=false angle_enable_gl=true angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
 call git apply -p0 ..\angle.patch || exit /b 1
 call autoninja -C out/Release libEGL libGLESv2 libGLESv1_CM || exit /b 1
+rem call autoninja -C out/Debug libEGL libGLESv2 libGLESv1_CM || exit /b 1
 popd
 
 rem *** prepare output folder ***
