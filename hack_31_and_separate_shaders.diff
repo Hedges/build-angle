@@ -1,0 +1,71 @@
+ include/platform/gl_features.json      | 8 ++++++++
+ include/platform/vk_features.json      | 8 --------
+ src/libANGLE/gles_extensions_autogen.h | 2 +-
+ src/libANGLE/renderer/gl/DisplayGL.cpp | 3 ++-
+ 4 files changed, 11 insertions(+), 10 deletions(-)
+
+diff --git a/include/platform/gl_features.json b/include/platform/gl_features.json
+index 952fde3..c3aa09d 100644
+--- a/include/platform/gl_features.json
++++ b/include/platform/gl_features.json
+@@ -7,6 +7,14 @@
+         "gl_features.json: angle::Features and workarounds for GL driver bugs and other issues."
+     ],
+     "features": [
++        {
++            "name": "enable_separate_shader_objects",
++            "category": "AppWorkarounds",
++            "description": [
++                "Disable GL_EXT_separate_shader_objects and cap core ES version to 3.0"
++            ],
++            "issue": "https://issuetracker.google.com/309028728"
++        },
+         {
+             "name": "avoid_1_bit_alpha_texture_formats",
+             "category": "Workarounds",
+diff --git a/include/platform/vk_features.json b/include/platform/vk_features.json
+index fe7ff89..80a8783 100644
+--- a/include/platform/vk_features.json
++++ b/include/platform/vk_features.json
+@@ -1423,14 +1423,6 @@
+                 "VkDevice supports the VK_ANDROID_external_format_resolve extension"
+             ]
+         },
+-        {
+-            "name": "disable_separate_shader_objects",
+-            "category": "AppWorkarounds",
+-            "description": [
+-                "Disable GL_EXT_separate_shader_objects and cap core ES version to 3.0"
+-            ],
+-            "issue": "https://issuetracker.google.com/309028728"
+-        },
+         {
+             "name": "force_sample_usage_for_ahb_backed_images",
+             "category": "AppWorkarounds",
+diff --git a/src/libANGLE/gles_extensions_autogen.h b/src/libANGLE/gles_extensions_autogen.h
+index f1f0f9e..93b34bf 100644
+--- a/src/libANGLE/gles_extensions_autogen.h
++++ b/src/libANGLE/gles_extensions_autogen.h
+@@ -399,7 +399,7 @@ struct Extensions
+     bool semaphoreFdEXT = false;
+ 
+     // GL_EXT_separate_shader_objects
+-    bool separateShaderObjectsEXT = false;
++    bool separateShaderObjectsEXT = true;
+ 
+     // GL_ARM_shader_framebuffer_fetch
+     bool shaderFramebufferFetchARM = false;
+diff --git a/src/libANGLE/renderer/gl/DisplayGL.cpp b/src/libANGLE/renderer/gl/DisplayGL.cpp
+index 0820b39..0985ae8 100644
+--- a/src/libANGLE/renderer/gl/DisplayGL.cpp
++++ b/src/libANGLE/renderer/gl/DisplayGL.cpp
+@@ -154,7 +154,8 @@ egl::Error DisplayGL::makeCurrent(egl::Display *display,
+ gl::Version DisplayGL::getMaxConformantESVersion() const
+ {
+     // 3.1 support is in progress.
+-    return std::min(getMaxSupportedESVersion(), gl::Version(3, 0));
++    // return std::min(getMaxSupportedESVersion(), gl::Version(3, 0));
++    return gl::Version(3, 1);
+ }
+ 
+ Optional<gl::Version> DisplayGL::getMaxSupportedDesktopVersion() const
