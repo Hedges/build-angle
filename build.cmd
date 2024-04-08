@@ -69,11 +69,12 @@ pushd angle.src
 
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0
 call gclient sync || exit /b 1
-rem call gn gen out/Release --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=false angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_null=false" || exit /b 1
-call gn gen out/Release --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=true angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
+call gn gen out/ReleaseDX --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=false angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_null=false" || exit /b 1
+rem call gn gen out/ReleaseGL --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=true angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
 rem call gn gen out/Debug --args="angle_build_all=false is_debug=true angle_has_frame_capture=false angle_enable_gl=true angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
 call git apply -p0 ..\angle.patch || exit /b 1
-call autoninja -C out/Release libEGL libGLESv2 libGLESv1_CM || exit /b 1
+call autoninja -C out/ReleaseDX libEGL libGLESv2 libGLESv1_CM || exit /b 1
+rem call autoninja -C out/ReleaseGL libEGL libGLESv2 libGLESv1_CM || exit /b 1
 rem call autoninja -C out/Debug libEGL libGLESv2 libGLESv1_CM || exit /b 1
 popd
 
