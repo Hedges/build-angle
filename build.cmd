@@ -5,12 +5,16 @@ if "%1" equ "GL" (
   set BACK=GL
 ) else if "%1" equ "DX" (
   set BACK=DX
+) else if "%1" equ "Vulkan" (
+  set BACK=Vulkan
 ) else if "%1" neq "" (
   echo Unknown backend^^!
   exit /b 1
 ) else (
   set BACK=GL
 )
+
+set CONFIG=Release
 
 set PATH=%CD%\depot_tools;%PATH%
 
@@ -82,12 +86,14 @@ set DEPOT_TOOLS_WIN_TOOLCHAIN=0
 call gclient sync || exit /b 1
 
 if "%BACK%" equ "GL" (
-  call gn gen out/Release%BACK% --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=true angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
-) else (
-  call gn gen out/Release%BACK% --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=false angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_null=false" || exit /b 1
+  call gn gen out/%CONFIG%%BACK% --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=true angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
+) else if "%BACK%" equ "DX" (
+  call gn gen out/%CONFIG%%BACK% --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=false angle_enable_vulkan=false angle_enable_d3d9=false angle_enable_null=false" || exit /b 1
+) else if "%BACK%" equ "Vulkan" (
+  call gn gen out/%CONFIG%%BACK% --args="angle_build_all=false is_debug=false angle_has_frame_capture=false angle_enable_gl=false angle_enable_vulkan=true angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_null=false" || exit /b 1
 )
 call git apply -p0 ..\angle.patch || exit /b 1
-call autoninja -C out/Release%BACK% libEGL libGLESv2 libGLESv1_CM || exit /b 1
+call autoninja -C out/%CONFIG%%BACK% libEGL libGLESv2 libGLESv1_CM || exit /b 1
 
 popd
 
@@ -103,13 +109,14 @@ copy /y angle.src\.git\refs\heads\main bin\%BACK%\commit.txt 1>nul 2>nul
 
 copy /y "%ProgramFiles(x86)%\Windows Kits\10\Redist\D3D\x64\d3dcompiler_47.dll" bin\%BACK%\bin 1>nul 2>nul
 
-copy /y angle.src\out\Release%BACK%\libEGL.dll       bin\%BACK%\bin        1>nul 2>nul
-copy /y angle.src\out\Release%BACK%\libGLESv1_CM.dll bin\%BACK%\bin        1>nul 2>nul
-copy /y angle.src\out\Release%BACK%\libGLESv2.dll    bin\%BACK%\bin        1>nul 2>nul
+copy /y angle.src\out\%CONFIG%%BACK%\libEGL.dll       bin\%BACK%\bin        1>nul 2>nul
+copy /y angle.src\out\%CONFIG%%BACK%\libGLESv1_CM.dll bin\%BACK%\bin        1>nul 2>nul
+copy /y angle.src\out\%CONFIG%%BACK%\libGLESv2.dll    bin\%BACK%\bin        1>nul 2>nul
+copy /y angle.src\out\%CONFIG%%BACK%\vulkan-1.dll     bin\%BACK%\bin        1>nul 2>nul
 
-copy /y angle.src\out\Release%BACK%\libEGL.dll.lib       bin\%BACK%\lib    1>nul 2>nul
-copy /y angle.src\out\Release%BACK%\libGLESv1_CM.dll.lib bin\%BACK%\lib    1>nul 2>nul
-copy /y angle.src\out\Release%BACK%\libGLESv2.dll.lib    bin\%BACK%\lib    1>nul 2>nul
+copy /y angle.src\out\%CONFIG%%BACK%\libEGL.dll.lib       bin\%BACK%\lib    1>nul 2>nul
+copy /y angle.src\out\%CONFIG%%BACK%\libGLESv1_CM.dll.lib bin\%BACK%\lib    1>nul 2>nul
+copy /y angle.src\out\%CONFIG%%BACK%\libGLESv2.dll.lib    bin\%BACK%\lib    1>nul 2>nul
 
 xcopy /D /S /I /Q /Y angle.src\include\KHR   bin\%BACK%\include\KHR   1>nul 2>nul
 xcopy /D /S /I /Q /Y angle.src\include\EGL   bin\%BACK%\include\EGL   1>nul 2>nul
